@@ -2,17 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://MohammedShetaya.github.io/blog/posts/</loc>
+    <loc>/posts/</loc>
     <lastmod>2023-06-23T16:06:47+03:00</lastmod>
   </url><url>
-    <loc>https://MohammedShetaya.github.io/blog/</loc>
+    <loc>/</loc>
     <lastmod>2023-06-23T16:06:47+03:00</lastmod>
   </url><url>
-    <loc>https://MohammedShetaya.github.io/blog/posts/mypost/</loc>
+    <loc>/posts/mypost/</loc>
     <lastmod>2023-06-23T16:06:47+03:00</lastmod>
   </url><url>
-    <loc>https://MohammedShetaya.github.io/blog/categories/</loc>
+    <loc>/categories/</loc>
   </url><url>
-    <loc>https://MohammedShetaya.github.io/blog/tags/</loc>
+    <loc>/tags/</loc>
   </url>
 </urlset>
