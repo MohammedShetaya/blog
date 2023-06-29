@@ -8,12 +8,13 @@
     <language>en-us</language>
     <lastBuildDate>Fri, 23 Jun 2023 16:06:47 +0300</lastBuildDate><atom:link href="https://mohammedshetaya.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>This is a title</title>
-      <link>https://mohammedshetaya.github.io/blog/posts/mypost/</link>
+      <title>Docker [E01]: intro to namespaces</title>
+      <link>https://mohammedshetaya.github.io/blog/posts/docker-intro-to-namespaces/</link>
       <pubDate>Fri, 23 Jun 2023 16:06:47 +0300</pubDate>
       
-      <guid>https://mohammedshetaya.github.io/blog/posts/mypost/</guid>
-      <description>System.out.println(&amp;#34;HELLO WORLD&amp;#34;); </description>
+      <guid>https://mohammedshetaya.github.io/blog/posts/docker-intro-to-namespaces/</guid>
+      <description>Docker series: how things actually work from the inside If you came by this page, you might be interested in knowing what is docker and how it works. I&amp;rsquo;m gonna explain how it works internally with some examples, so we do not lose it having too many theoritical discussions.
+Non-isolated processes: Every program running on a machine is composed of one or more processes. Imagine that we have one process that runs a malware.</description>
     </item>
     
   </channel>

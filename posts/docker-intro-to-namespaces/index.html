@@ -3,11 +3,11 @@
 <meta http-equiv="content-type" content="text/html">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title itemprop="name">Shetaya&#39;s Blog | Shetaya&#39;s Blog</title>
-<meta property="og:title" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
-<meta name="twitter:title" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
-<meta itemprop="name" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
-<meta name="application-name" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
+<title itemprop="name">Docker [E01]: intro to namespaces | Shetaya&#39;s Blog</title>
+<meta property="og:title" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
+<meta name="twitter:title" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
+<meta itemprop="name" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
+<meta name="application-name" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
 <meta property="og:site_name" content="Shetaya&#39;s blog" />
 
 <meta name="description" content="Minimal Hugo blog theme with light and dark mode support">
@@ -28,14 +28,50 @@
 
 
 
+    
+    
+    
+    
+
+    <meta property="og:type" content="article" />
+    <meta property="og:article:published_time" content=2023-06-23T16:06:47&#43;0300 />
+    <meta property="article:published_time" content=2023-06-23T16:06:47&#43;0300 />
+
+    
+
+    
+
+    <script defer type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Article",
+        "headline": "Docker [E01]: intro to namespaces",
+        "author": {
+        "@type": "Person",
+        "name": ""
+        },
+        "datePublished": "2023-06-23",
+        "description": "",
+        "wordCount":  502 ,
+        "mainEntityOfPage": "True",
+        "dateModified": "2023-06-23",
+        "image": {
+        "@type": "imageObject",
+        "url": ""
+        },
+        "publisher": {
+        "@type": "Organization",
+        "name": "Shetaya\u0027s Blog"
+        }
+    }
+    </script>
+
 
 <meta name="generator" content="Hugo 0.114.0">
 
     
 
-    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/">
-    <link href="/blog/index.xml" rel="alternate" type="application/rss+xml" title="Shetaya&#39;s Blog">
-    <link href="/blog/index.xml" rel="feed" type="application/rss+xml" title="Shetaya&#39;s Blog">
+    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/posts/docker-intro-to-namespaces/">
     <link href="/blog/style.min.d16f523c36741e07697791cfe4bcb09b8c92c7034d5cbf85980df65d92a70e97.css" rel="stylesheet">
     <link href="/blog/code-highlight.min.706d31975fec544a864cb7f0d847a73ea55ca1df91bf495fd12a177138d807cf.css" rel="stylesheet">
 
@@ -60,7 +96,7 @@
 
     
     </head>
-<body data-theme="dark" class="notransition">
+<body data-theme = "dark" class="notransition">
 
 <script src="/blog/js/theme.min.8961c317c5b88b953fe27525839672c9343f1058ab044696ca225656c8ba2ab0.js" integrity="sha256-iWHDF8W4i5U/4nUlg5ZyyTQ/EFirBEaWyiJWVsi6KrA="></script>
 
@@ -94,7 +130,7 @@ stroke-linejoin="round" class="feather feather-home">
                 </li>
                 
                 <li>
-                    <a class="menu-link " href="/blog/posts/">
+                    <a class="menu-link active" href="/blog/posts/">
                         Posts
                     </a>
                     
@@ -120,41 +156,68 @@ stroke-linejoin="round" class="feather feather-home">
         </div>
     </nav>
 </div>
-<div class="wrapper">
-        
 
+<div class="wrapper post">
+    <main class="page-content" aria-label="Content">
+        <article>
+            <header class="header">
+                <h1 class="header-title">Docker [E01]: intro to namespaces</h1>
+                
+                <div class="post-meta">
+                    <time datetime="2023-06-23T16:06:47&#43;03:00" itemprop="datePublished"> 23 Jun 2023 </time>
+                </div>
+            </header>
+            <details class="toc">
+                <summary><b>Table of Contents</b></summary>
+                <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#non-isolated-processes">Non-isolated processes:</a></li>
+        <li><a href="#what-are-__containers__">What are <strong>Containers</strong>?</a></li>
+        <li><a href="#what-are-__namespaces__">What are <strong>Namespaces</strong>:</a></li>
+        <li><a href="#linux-namespaces">Linux Namespaces:</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+            </details><div class="page-content">
+                <h1 id="docker-series-how-things-actually-work-from-the-inside">Docker series: how things actually work from the inside</h1>
+<p>If you came by this page, you might be interested in knowing what is docker and how it works. I&rsquo;m gonna explain how it works internally with some examples, so we do not lose it having too many theoritical discussions.</p>
+<h3 id="non-isolated-processes">Non-isolated processes:</h3>
+<p>Every program running on a machine is composed of one or more processes. Imagine that we have one process that runs a malware. This process can badly affect the other normal processes. it can do the following:</p>
+<ul>
+<li>Overuse the available recources of the machine (example: memory, network bandwidth ,or cpu)</li>
+<li>corrupt the files that other processes use or even change their code files.</li>
+</ul>
+<p>For these security reasons, there&rsquo;s a need to isolate the recources of each process running on the machine, but is it only a security requirement?</p>
+<p>Answer is NO, as the running processes are normal applications, say a Java, or a python application. These applications have a set of requirments that should be available to the process environment prior running the application. You may even have two apps that needs different virsions of a requirment, so the question pops up, how can we make an isolation so that each process can run within its own environment that is separate from the other envs? Should we use virtual machines? No, that would be to heavy to run a VM for each process. So, the solution is what <strong>Docker</strong> calls <strong>CONTAINERS</strong> that uses an underlying technology called <strong>Namespaces</strong>.</p>
+<h3 id="what-are-__containers__">What are <strong>Containers</strong>?</h3>
+<p>container is a lightweight and isolated execution environment that packages software and its dependencies together. Containers provide a consistent and portable way to run applications across different computing environments, such as development machines, servers, or cloud platforms. These containers are build on a Linux technology called <strong>Namespaces</strong>. This means it is a requirement to use Linux to have that type of isolation.</p>
+<h3 id="what-are-__namespaces__">What are <strong>Namespaces</strong>:</h3>
+<blockquote>
+<p>Wikipedia</p>
+<blockquote>
+<p>Namespaces are a feature of the Linux kernel that partitions kernel resources such that one set of processes sees one set of resources while another set of processes sees a different set of resources. The feature works by having the same namespace for a set of resources and processes, but those namespaces refer to distinct resources. Resources may exist in multiple spaces. Examples of such resources are process IDs, host-names, user IDs, file names, some names associated with network access, and Inter-process communication.</p>
+</blockquote>
+</blockquote>
+<p>Imagine that some memory, cpu, network bandwidth and you want to partition all of them bewtween the running process, so that none of them can interfere with the recourses of the other, or in some cases not know that another process exist ;)</p>
+<h3 id="linux-namespaces">Linux Namespaces:</h3>
+<ul>
+<li>pid (isolate process ids)</li>
+<li>cgroups</li>
+<li>mnt (isolate disk space and files)</li>
+<li>net (isolate network interfaces)</li>
+<li>ipc (inter process communication)</li>
+<li>time</li>
+<li>user</li>
+</ul>
+<p>These are the most common and known namespaces that are being used and available on Linux distributions that support Namespaces. We will go through each one of them (with examples) to explain how they work.</p>
 
-<div class="author">
-    
-    
-    <img class="author-avatar" src="/blog/avatar_hu3aa501fc3a29465eb61cbc00c61937a4_175261_100x100_fill_q75_h2_box_smart1.webp" alt="Mohamed Shetaya" width="1183"
-        height="1122" />
-    
-    <h2 class="author-name">Shetaya&#39;s blog</h2>
-    <p class="author-bio">A personal blog for another engineer who is building his way up</p>
+            </div>
+        </article></main>
 </div>
-
-        <main aria-label="Content">
-            <h3 class="posts-item-note" aria-label="Recent Posts">Recent Posts</h3>
-            
-            
-            
-            
-            <article class="post-item">
-    <h4 class="post-item-title">
-        <a href="/blog/posts/docker-intro-to-namespaces/">Docker [E01]: intro to namespaces</a>
-    </h4>
-    
-    
-    <time class="post-item-meta" datetime="2023-06-23T16:06:47&#43;0300">
-        23 Jun 2023
-    </time>
-</article>
-
-            
-            
-        </main>
-    </div><footer class="footer">
+<footer class="footer">
     <span class="footer_item"> </span>
     &nbsp;
 
@@ -215,5 +278,4 @@ stroke-linejoin="round" class="feather feather-home">
     
 
 </body>
-
 </html>
