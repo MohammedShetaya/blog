@@ -3,11 +3,11 @@
 <meta http-equiv="content-type" content="text/html">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title itemprop="name">Shetaya&#39;s Blog | Shetaya&#39;s Blog</title>
-<meta property="og:title" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
-<meta name="twitter:title" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
-<meta itemprop="name" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
-<meta name="application-name" content="Shetaya&#39;s Blog | Shetaya&#39;s Blog" />
+<title itemprop="name">Docker [E02]: PID namespaces | Shetaya&#39;s Blog</title>
+<meta property="og:title" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
+<meta name="twitter:title" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
+<meta itemprop="name" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
+<meta name="application-name" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
 <meta property="og:site_name" content="Shetaya&#39;s blog" />
 
 <meta name="description" content="Minimal Hugo blog theme with light and dark mode support">
@@ -28,14 +28,50 @@
 
 
 
+    
+    
+    
+    
+
+    <meta property="og:type" content="article" />
+    <meta property="og:article:published_time" content=2023-07-01T17:08:08Z />
+    <meta property="article:published_time" content=2023-07-01T17:08:08Z />
+
+    
+
+    
+
+    <script defer type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "Article",
+        "headline": "Docker [E02]: PID namespaces",
+        "author": {
+        "@type": "Person",
+        "name": ""
+        },
+        "datePublished": "2023-07-01",
+        "description": "",
+        "wordCount":  678 ,
+        "mainEntityOfPage": "True",
+        "dateModified": "2023-07-01",
+        "image": {
+        "@type": "imageObject",
+        "url": ""
+        },
+        "publisher": {
+        "@type": "Organization",
+        "name": "Shetaya\u0027s Blog"
+        }
+    }
+    </script>
+
 
 <meta name="generator" content="Hugo 0.114.0">
 
     
 
-    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/">
-    <link href="/blog/index.xml" rel="alternate" type="application/rss+xml" title="Shetaya&#39;s Blog">
-    <link href="/blog/index.xml" rel="feed" type="application/rss+xml" title="Shetaya&#39;s Blog">
+    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/posts/docker-pid-namespace/">
     <link href="/blog/style.min.d16f523c36741e07697791cfe4bcb09b8c92c7034d5cbf85980df65d92a70e97.css" rel="stylesheet">
     <link href="/blog/code-highlight.min.706d31975fec544a864cb7f0d847a73ea55ca1df91bf495fd12a177138d807cf.css" rel="stylesheet">
 
@@ -60,7 +96,7 @@
 
     
     </head>
-<body data-theme="dark" class="notransition">
+<body data-theme = "dark" class="notransition">
 
 <script src="/blog/js/theme.min.8961c317c5b88b953fe27525839672c9343f1058ab044696ca225656c8ba2ab0.js" integrity="sha256-iWHDF8W4i5U/4nUlg5ZyyTQ/EFirBEaWyiJWVsi6KrA="></script>
 
@@ -94,7 +130,7 @@ stroke-linejoin="round" class="feather feather-home">
                 </li>
                 
                 <li>
-                    <a class="menu-link " href="/blog/posts/">
+                    <a class="menu-link active" href="/blog/posts/">
                         Posts
                     </a>
                     
@@ -120,53 +156,94 @@ stroke-linejoin="round" class="feather feather-home">
         </div>
     </nav>
 </div>
-<div class="wrapper">
-        
 
+<div class="wrapper post">
+    <main class="page-content" aria-label="Content">
+        <article>
+            <header class="header">
+                <h1 class="header-title">Docker [E02]: PID namespaces</h1>
+                
+                <div class="post-meta">
+                    <time datetime="2023-07-01T17:08:08&#43;00:00" itemprop="datePublished"> 1 Jul 2023 </time>
+                </div>
+            </header>
+            <details class="toc">
+                <summary><b>Table of Contents</b></summary>
+                <nav id="TableOfContents">
+  <ul>
+    <li><a href="#what-namespaces-do-exist-on-my-machine">What namespaces do exist on my machine?</a></li>
+    <li><a href="#what-pid-namespace-actually-is">What pid namespace actually is?</a></li>
+    <li><a href="#how-to-create-a-pid-namespace">How to create a pid namespace?</a>
+      <ul>
+        <li><a href="#how-does-it-look-from-outside-of-the-new-namespace">How does it look from outside of the new namespace?</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+            </details><div class="page-content">
+                <p>So now we understood why it is important to make these lightweight isolated environments on Linux, we can ask how can we do that. If you remember from the previous post on docker, we mentioned some namespaces that will allow us to make these isolated environments. In this post, we will describe only one of them, which is <strong>PID</strong> namespace.</p>
+<h1 id="pid-namespaces">PID Namespaces:</h1>
+<p>To understand what this is we need to go one step back and try to describe how Linux processes work. Simply a Linux operating system is made up of one process, namely &ldquo;systemd&rdquo;, so once the OS runs this process is the only process that gets executed. This process is responsible for creating all the other processes that are needed for the OS to be used by other applications. Think of it as a tree where the root is the systemd process and all other processes are children of that process. The child processes themselves and can have their own children.
+</br>
+</br></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># This shows the process tree on Ubuntu VM</span>
+</span></span><span class="line"><span class="cl">pstree
+</span></span></code></pre></div><div>It should look like this </div>
+<img src="1.png" alt="Alt Text" width="70%">
+</br>
+</br>
+</br>
+</br>
+<h2 id="what-namespaces-do-exist-on-my-machine">What namespaces do exist on my machine?</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># This command will show the namespaces that are applied to the current root process (systemd) and all its children </span>
+</span></span><span class="line"><span class="cl"><span class="c1"># unless there is a child that has another set of namespaces applied to it then the parent namespaces will not apply then</span>
+</span></span><span class="line"><span class="cl">lsns
+</span></span></code></pre></div><img src="2.png" alt="Alt Text" width="70%">
+</br>
+As we can see, the pid namespace along with the other namespaces is applied to the root process and all its children.
+</br>
+</br>
+</br>
+</br>
+<h2 id="what-pid-namespace-actually-is">What pid namespace actually is?</h2>
+<p>It is a numbering for the existing processes which gives a process a <strong>PID</strong>, a unique number to identify this process. Following what we mentioned before, as <strong>systemd</strong> is the root of all processes, it is given an ID of one.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pstree -p
+</span></span></code></pre></div></br>
+<img src="3.png" alt="Alt Text" width="70%">
+</br>
+Remember! Our goal is to make an isolated environment to run our applications. Should we leave the pids as a golbal ids where any running process knows that one of its parents is the systemd process? No, we need to isolate the pids so that each process thinks that it is the root of the process tree. This is what the PID namespace does. It gives each process a unique pid that is only known to the process itself and its children. So, if we have a process that has a PID of 1, it will think that it is the root of the process tree and it will not know that there is another process that has the same PID. This is how we isolate the processes from each other.
+</br>
+Once we have that, each process will not know about the other processes that are running on the machine or even know that there is a parent that controls them all. This is the first step to make an isolated environment.
+</br>
+</br>
+</br>
+<h2 id="how-to-create-a-pid-namespace">How to create a pid namespace?</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># The unshare command forks a new process from the process that will run the below command</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># This command will create a new pid namespace and run a command &#34;bash&#34; in it as the root of that new namespace</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># So, the new bash process will think that it is the root of the process tree and not know </span>
+</span></span><span class="line"><span class="cl"><span class="c1"># the process that created it or any other process</span>
+</span></span><span class="line"><span class="cl">unshare --pid --fork --mount-proc /bin/bash
+</span></span></code></pre></div></br>
+<img src="4.png" alt="Alt Text" width="85%">
+</br>
+Now we are in the new process, what should happen if we run the pstree command again?
+</br>
+</br>
+<img src="5.png" alt="Alt Text" width="85%">
+</br>
+</br>
+<p>Yes, the root process that is running the bash process with pid=1 and another child that was created from the parent bash to run the pstree command.</p>
+<h3 id="how-does-it-look-from-outside-of-the-new-namespace">How does it look from outside of the new namespace?</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pstree -p
+</span></span></code></pre></div></br>
+<img src="6.png" alt="Alt Text" width="80%">
+</br>
+<p>As I am connecting to the testing maching using SSH, you can see that any command that I run is created as a child of that bash process that is conecting me to the SSH deamon. Also the process that we create with a new PID namespace is visible from the outside to the root and has a global PID, so it is still a part of the original tree.</p>
 
-<div class="author">
-    
-    
-    <img class="author-avatar" src="/blog/avatar_hu3aa501fc3a29465eb61cbc00c61937a4_175261_100x100_fill_q75_h2_box_smart1.webp" alt="Mohamed Shetaya" width="1183"
-        height="1122" />
-    
-    <h2 class="author-name">Shetaya&#39;s blog</h2>
-    <p class="author-bio">A personal blog for another engineer who is building his way up</p>
+            </div>
+        </article></main>
 </div>
-
-        <main aria-label="Content">
-            <h3 class="posts-item-note" aria-label="Recent Posts">Recent Posts</h3>
-            
-            
-            
-            
-            <article class="post-item">
-    <h4 class="post-item-title">
-        <a href="/blog/posts/docker-pid-namespace/">Docker [E02]: PID namespaces</a>
-    </h4>
-    
-    
-    <time class="post-item-meta" datetime="2023-07-01T17:08:08Z">
-        1 Jul 2023
-    </time>
-</article>
-
-            
-            <article class="post-item">
-    <h4 class="post-item-title">
-        <a href="/blog/posts/docker-intro-to-namespaces/">Docker [E01]: intro to namespaces</a>
-    </h4>
-    
-    
-    <time class="post-item-meta" datetime="2023-06-23T16:06:47&#43;0300">
-        23 Jun 2023
-    </time>
-</article>
-
-            
-            
-        </main>
-    </div><footer class="footer">
+<footer class="footer">
     <span class="footer_item"> </span>
     &nbsp;
 
@@ -227,5 +304,4 @@ stroke-linejoin="round" class="feather feather-home">
     
 
 </body>
-
 </html>

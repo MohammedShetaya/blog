@@ -6,7 +6,17 @@
     <description>Recent content on Shetaya&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 23 Jun 2023 16:06:47 +0300</lastBuildDate><atom:link href="https://mohammedshetaya.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 01 Jul 2023 17:08:08 +0000</lastBuildDate><atom:link href="https://mohammedshetaya.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Docker [E02]: PID namespaces</title>
+      <link>https://mohammedshetaya.github.io/blog/posts/docker-pid-namespace/</link>
+      <pubDate>Sat, 01 Jul 2023 17:08:08 +0000</pubDate>
+      
+      <guid>https://mohammedshetaya.github.io/blog/posts/docker-pid-namespace/</guid>
+      <description>So now we understood why it is important to make these lightweight isolated environments on Linux, we can ask how can we do that. If you remember from the previous post on docker, we mentioned some namespaces that will allow us to make these isolated environments. In this post, we will describe only one of them, which is PID namespace.
+PID Namespaces: To understand what this is we need to go one step back and try to describe how Linux processes work.</description>
+    </item>
+    
     <item>
       <title>Docker [E01]: intro to namespaces</title>
       <link>https://mohammedshetaya.github.io/blog/posts/docker-intro-to-namespaces/</link>
