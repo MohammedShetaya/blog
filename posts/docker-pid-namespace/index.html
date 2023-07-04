@@ -52,7 +52,7 @@
         },
         "datePublished": "2023-07-01",
         "description": "",
-        "wordCount":  678 ,
+        "wordCount":  703 ,
         "mainEntityOfPage": "True",
         "dateModified": "2023-07-01",
         "image": {
@@ -178,12 +178,13 @@ stroke-linejoin="round" class="feather feather-home">
         <li><a href="#how-does-it-look-from-outside-of-the-new-namespace">How does it look from outside of the new namespace?</a></li>
       </ul>
     </li>
+    <li><a href="#references">References:</a></li>
   </ul>
 </nav>
             </details><div class="page-content">
-                <p>So now we understood why it is important to make these lightweight isolated environments on Linux, we can ask how can we do that. If you remember from the previous post on docker, we mentioned some namespaces that will allow us to make these isolated environments. In this post, we will describe only one of them, which is <strong>PID</strong> namespace.</p>
+                <p>So now we understood why it is important to make these lightweight isolated environments on Linux, we can ask how can we do that. If you remember from the previous <a href="https://mohammedshetaya.github.io/blog/posts/docker-intro-to-namespaces/">post</a> on docker, we mentioned some namespaces that will allow us to make these isolated environments. In this post, we will describe only one of them, which is <strong>PID</strong> namespace.</p>
 <h1 id="pid-namespaces">PID Namespaces:</h1>
-<p>To understand what this is we need to go one step back and try to describe how Linux processes work. Simply a Linux operating system is made up of one process, namely &ldquo;systemd&rdquo;, so once the OS runs this process is the only process that gets executed. This process is responsible for creating all the other processes that are needed for the OS to be used by other applications. Think of it as a tree where the root is the systemd process and all other processes are children of that process. The child processes themselves and can have their own children.
+<p>To understand what this is we need to go one step back and try to describe how Linux processes work. Simply a Linux operating system is made up of one process, namely &ldquo;init&rdquo;, so once the OS runs this process is the only process that gets executed. This process is responsible for creating all the other processes that are needed for the OS to be used by other applications. Think of it as a tree where the root is the init process and all other processes are children of that process. The child processes themselves and can have their own children.
 </br>
 </br></p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># This shows the process tree on Ubuntu VM</span>
@@ -195,23 +196,23 @@ stroke-linejoin="round" class="feather feather-home">
 </br>
 </br>
 <h2 id="what-namespaces-do-exist-on-my-machine">What namespaces do exist on my machine?</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># This command will show the namespaces that are applied to the current root process (systemd) and all its children </span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># This command will show the namespaces that are applied to the current root process (init) and all its children </span>
 </span></span><span class="line"><span class="cl"><span class="c1"># unless there is a child that has another set of namespaces applied to it then the parent namespaces will not apply then</span>
 </span></span><span class="line"><span class="cl">lsns
 </span></span></code></pre></div><img src="2.png" alt="Alt Text" width="70%">
 </br>
-As we can see, the pid namespace along with the other namespaces is applied to the root process and all its children.
+As we can see, the pid namespace along with the other namespaces is applied to the root process and all its children. I'm using Ubuntu, so the root init process is called "systemd" and not "init" as it is in other Linux distributions.
 </br>
 </br>
 </br>
 </br>
 <h2 id="what-pid-namespace-actually-is">What pid namespace actually is?</h2>
-<p>It is a numbering for the existing processes which gives a process a <strong>PID</strong>, a unique number to identify this process. Following what we mentioned before, as <strong>systemd</strong> is the root of all processes, it is given an ID of one.</p>
+<p>It is a numbering for the existing processes which gives a process a <strong>PID</strong>, a unique number to identify this process. Following what we mentioned before, as  <strong>init</strong> is the root of all processes, it is given an ID of one.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pstree -p
 </span></span></code></pre></div></br>
 <img src="3.png" alt="Alt Text" width="70%">
 </br>
-Remember! Our goal is to make an isolated environment to run our applications. Should we leave the pids as a golbal ids where any running process knows that one of its parents is the systemd process? No, we need to isolate the pids so that each process thinks that it is the root of the process tree. This is what the PID namespace does. It gives each process a unique pid that is only known to the process itself and its children. So, if we have a process that has a PID of 1, it will think that it is the root of the process tree and it will not know that there is another process that has the same PID. This is how we isolate the processes from each other.
+Remember! Our goal is to make an isolated environment to run our applications. Should we leave the pids as a golbal ids where any running process knows that one of its parents is the init process? No, we need to isolate the pids so that each process thinks that it is the root of the process tree. This is what the PID namespace does. It gives each process a unique pid that is only known to the process itself and its children. So, if we have a process that has a PID of 1, it will think that it is the root of the process tree and it will not know that there is another process that has the same PID. This is how we isolate the processes from each other.
 </br>
 Once we have that, each process will not know about the other processes that are running on the machine or even know that there is a parent that controls them all. This is the first step to make an isolated environment.
 </br>
@@ -239,6 +240,13 @@ Now we are in the new process, what should happen if we run the pstree command a
 <img src="6.png" alt="Alt Text" width="80%">
 </br>
 <p>As I am connecting to the testing maching using SSH, you can see that any command that I run is created as a child of that bash process that is conecting me to the SSH deamon. Also the process that we create with a new PID namespace is visible from the outside to the root and has a global PID, so it is still a part of the original tree.</p>
+</br>
+</br>
+</br>
+<h2 id="references">References:</h2>
+<p><a href="https://man7.org/linux/man-pages/man7/pid_namespaces.7.html">PID</a>
+</br>
+<a href="https://en.wikipedia.org/wiki/Init">Init process</a></p>
 
             </div>
         </article></main>
