@@ -3,11 +3,11 @@
 <meta http-equiv="content-type" content="text/html">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title itemprop="name">Docker [E02]: PID namespaces | Shetaya&#39;s Blog</title>
-<meta property="og:title" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
-<meta name="twitter:title" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
-<meta itemprop="name" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
-<meta name="application-name" content="Docker [E02]: PID namespaces | Shetaya&#39;s Blog" />
+<title itemprop="name">Docker [E03]: Cgroups | Shetaya&#39;s Blog</title>
+<meta property="og:title" content="Docker [E03]: Cgroups | Shetaya&#39;s Blog" />
+<meta name="twitter:title" content="Docker [E03]: Cgroups | Shetaya&#39;s Blog" />
+<meta itemprop="name" content="Docker [E03]: Cgroups | Shetaya&#39;s Blog" />
+<meta name="application-name" content="Docker [E03]: Cgroups | Shetaya&#39;s Blog" />
 <meta property="og:site_name" content="Shetaya&#39;s blog" />
 
 <meta name="description" content="Minimal Hugo blog theme with light and dark mode support">
@@ -34,8 +34,8 @@
     
 
     <meta property="og:type" content="article" />
-    <meta property="og:article:published_time" content=2023-07-01T17:08:08Z />
-    <meta property="article:published_time" content=2023-07-01T17:08:08Z />
+    <meta property="og:article:published_time" content=2023-07-16T09:42:39Z />
+    <meta property="article:published_time" content=2023-07-16T09:42:39Z />
 
     
 
@@ -45,16 +45,16 @@
     {
         "@context": "http://schema.org",
         "@type": "Article",
-        "headline": "Docker [E02]: PID namespaces",
+        "headline": "Docker [E03]: Cgroups",
         "author": {
         "@type": "Person",
         "name": ""
         },
-        "datePublished": "2023-07-01",
+        "datePublished": "2023-07-16",
         "description": "",
-        "wordCount":  702 ,
+        "wordCount":  789 ,
         "mainEntityOfPage": "True",
-        "dateModified": "2023-07-01",
+        "dateModified": "2023-07-16",
         "image": {
         "@type": "imageObject",
         "url": ""
@@ -71,7 +71,7 @@
 
     
 
-    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/posts/docker-pid-namespace/">
+    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/posts/docker-cgroups/">
     <link href="/blog/style.min.d16f523c36741e07697791cfe4bcb09b8c92c7034d5cbf85980df65d92a70e97.css" rel="stylesheet">
     <link href="/blog/code-highlight.min.706d31975fec544a864cb7f0d847a73ea55ca1df91bf495fd12a177138d807cf.css" rel="stylesheet">
 
@@ -161,95 +161,97 @@ stroke-linejoin="round" class="feather feather-home">
     <main class="page-content" aria-label="Content">
         <article>
             <header class="header">
-                <h1 class="header-title">Docker [E02]: PID namespaces</h1>
+                <h1 class="header-title">Docker [E03]: Cgroups</h1>
                 
                 <div class="post-meta">
-                    <time datetime="2023-07-01T17:08:08&#43;00:00" itemprop="datePublished"> 1 Jul 2023 </time>
+                    <time datetime="2023-07-16T09:42:39&#43;00:00" itemprop="datePublished"> 16 Jul 2023 </time>
                 </div>
             </header>
             <details class="toc">
                 <summary><b>Table of Contents</b></summary>
                 <nav id="TableOfContents">
   <ul>
-    <li><a href="#what-namespaces-do-exist-on-my-machine">What namespaces do exist on my machine?</a></li>
-    <li><a href="#what-pid-namespace-actually-is">What pid namespace actually is?</a></li>
-    <li><a href="#how-to-create-a-pid-namespace">How to create a pid namespace?</a>
+    <li><a href="#namespaces-vs-cgroups">Namespaces VS Cgroups</a></li>
+    <li><a href="#cgroups">Cgroups</a>
       <ul>
-        <li><a href="#how-does-it-look-from-outside-of-the-new-namespace">How does it look from outside of the new namespace?</a></li>
+        <li><a href="#terminology">Terminology:</a></li>
       </ul>
     </li>
-    <li><a href="#references">References:</a></li>
+    <li><a href="#how-to-interact-with-cgroup-controllers">How to interact with Cgroup controllers?</a></li>
+    <li><a href="#what-is-the-structure-of-the-cgroups">What is the structure of the cgroups?</a></li>
+    <li><a href="#setting-a-limit-to-the-memory-cgroup">Setting a limit to the memory cgroup:</a></li>
   </ul>
 </nav>
             </details><div class="page-content">
-                <p>So now we understood why it is important to make these lightweight isolated environments on Linux, we can ask how can we do that. If you remember from the previous <a href="https://mohammedshetaya.github.io/blog/posts/docker-intro-to-namespaces/">post</a> on docker, we mentioned some namespaces that will allow us to make these isolated environments. In this post, we will describe only one of them, which is <strong>PID</strong> namespace.</p>
-<h1 id="pid-namespaces">PID Namespaces:</h1>
-<p>To understand what this is we need to go one step back and try to describe how Linux processes work. Simply a Linux operating system is made up of one process, namely &ldquo;init&rdquo;, so once the OS runs this process is the only process that gets executed. This process is responsible for creating all the other processes that are needed for the OS to be used by other applications. Think of it as a tree where the root is the init process and all other processes are children of that process. The child processes themselves can have their own children.
-</br>
-</br></p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># This shows the process tree on Ubuntu VM</span>
-</span></span><span class="line"><span class="cl">pstree
-</span></span></code></pre></div><div>It should look like this </div>
-<img src="1.png" alt="Alt Text" width="70%">
-</br>
-</br>
-</br>
-</br>
-<h2 id="what-namespaces-do-exist-on-my-machine">What namespaces do exist on my machine?</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># This command will show the namespaces that are applied to the current root process (init) and all its children </span>
-</span></span><span class="line"><span class="cl"><span class="c1"># unless there is a child that has another set of namespaces applied to it then the parent namespaces will not apply then</span>
-</span></span><span class="line"><span class="cl">lsns
-</span></span></code></pre></div><img src="2.png" alt="Alt Text" width="70%">
-</br>
-As we can see, the pid namespace along with the other namespaces is applied to the root process and all its children. I'm using Ubuntu, so the root init process is called "systemd" and not "init" as it is in other Linux distributions.
-</br>
-</br>
-</br>
-</br>
-<h2 id="what-pid-namespace-actually-is">What pid namespace actually is?</h2>
-<p>It is a numbering for the existing processes which gives a process a <strong>PID</strong>, a unique number to identify this process. Following what we mentioned before, as  <strong>init</strong> is the root of all processes, it is given an ID of one.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pstree -p
+                <h1 id="intro">Intro</h1>
+<p>We took a dive into namespaces, then we discussed how <a href="https://mohammedshetaya.github.io/blog/posts/docker-pid-namespace/">PID</a> namespace achieves the isolation of process IDs. Let&rsquo;s now talk about cgroups. We will get to the namespace later, but for now, we will start discussing cgroups and the discussion will proceed interchangeably between the two topics.</p>
+<h2 id="namespaces-vs-cgroups">Namespaces VS Cgroups</h2>
+<p>We mentioned that the main use of namespaces is to provide process level isolaion by virtualizing system recources that allows processes to have their own isolated view of the system recources such as process IDs, network interfaces, file systems, etc. Is that enough? No, there is more to achieve standalone isolated system. For example, what about the process allocated memory? How can we limit the memory usage of one process? These are questions that are not answered by namespaces.</p>
+<h2 id="cgroups">Cgroups</h2>
+<p>Control groups, usually referred to as cgroups, are a Linux kernel feature which allow processes to be organized into hierarchical groups whose usage of various types of resources can then be limited and monitored.</p>
+<h3 id="terminology">Terminology:</h3>
+<ol>
+<li>cgroup: a collection of processes that are bound to a set of recource limits. It is an abstract concept in our discussion.</li>
+<li>subsystem: is the acutal kernal component that implements the functionality of the abstract concept (cgroups). It also known as <strong>Resource Controllers</strong>.</li>
+</ol>
+<h2 id="how-to-interact-with-cgroup-controllers">How to interact with Cgroup controllers?</h2>
+<p>As they are a part of the kernel, we need a way to be able to alter them. The cgroups for a controller are arranged in a hierarchy. This hierarchy is defined by creating, removing, and renaming subdirectories within the cgroup filesystem. each linux distro supports a set of controllers that are mounted in most of the distros in <strong>/sys/fs/cgroup</strong>. One thing to know about the /sys directory in Linux is that it is created every time the system boots, so any data inside this directory is not persistent. This is suitable for what we are doing, isn&rsquo;t it? As if we created a set of rules that apply to one cgroup and a certain process joined that group, it should apply until the os is shut down. Once the os is started again the process will not evern exist, so should be its rules. That said, let&rsquo;s see what cgroup controllers exist on my machine (I am using Ubuntu 20.04 server).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ls -l /sys/fs/cgroup
 </span></span></code></pre></div></br>
-<img src="3.png" alt="Alt Text" width="70%">
-</br>
-Remember! Our goal is to make an isolated environment to run our applications. Should we leave the pids as a golbal ids where any running process knows that one of its parents is the init process? No, we need to isolate the pids so that each process thinks that it is the root of the process tree. This is what the PID namespace does. It gives each process a unique pid that is only known to the process itself and its children. So, if we have a process that has a PID of 1, it will think that it is the root of the process tree and it will not know that there is another process that has the same PID. This is how we isolate the processes from each other.
-</br>
-Once we have that, each process will not know about the other processes that are running on the machine or even know that there is a parent that controls them all. This is the first step to make an isolated environment.
+<img src="1.png" alt="Alt Text" width="80%">
 </br>
 </br>
-</br>
-<h2 id="how-to-create-a-pid-namespace">How to create a pid namespace?</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># The unshare command forks a new process from the process that will run the below command</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># This command will create a new pid namespace and run a command &#34;bash&#34; in it as the root of that new namespace</span>
-</span></span><span class="line"><span class="cl"><span class="c1"># So, the new bash process will think that it is the root of the process tree and not know </span>
-</span></span><span class="line"><span class="cl"><span class="c1"># the process that created it or any other process</span>
-</span></span><span class="line"><span class="cl">unshare --pid --fork --mount-proc /bin/bash
+<p>These are the cgroup controllers supported on my machine mounted in the <strong>/sys/fs/cgroup</strong> directory. Each one of these directories represent the root cgroup controller of each type. If we take a look on the memory controller for example, we will find some files that we need to alter to change the memory usage of any process in this cgroup.</p>
+<p>The <strong>memory.limit_in_bytes</strong> is the file that contains how much memory in bytes this cgroup processes should consume. The <strong>tasks</strong> folder contains all the PIDs of the processes in that group on which the rules of this group should apply.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ls -l /sys/fs/cgroup/memory/
 </span></span></code></pre></div></br>
-<img src="4.png" alt="Alt Text" width="85%">
-</br>
-Now we are in the new process, what should happen if we run the pstree command again?
+<img src="2.png" alt="Alt Text" width="80%">
 </br>
 </br>
-<img src="5.png" alt="Alt Text" width="85%">
+</br>
+<p>As these are the root controllers, the rules here will apply on all the system. Specifically, the <strong>systemd</strong> process. Which means that the memory.limit_in_bytes will contains a value equal to 9223372036854771712KB on my machine :)</p>
+<h2 id="what-is-the-structure-of-the-cgroups">What is the structure of the cgroups?</h2>
+<p>So to create a cgroup that should apply to a specific set of processes, not the who system, we just create a subdirectory in the root directory of the controller that we are targeting. Let&rsquo;s continue with the memory controller. If we create a sub directory called <strong>my_server_memory_group</strong>. This will create a child cgroup from the root and there are few things to mention here:</p>
+<ol>
+<li>The <strong>my_server_memory_group</strong> will contain the files needed, same as the parent.</li>
+<li>The tasks folder will be empty, because there no process assigned to that cgroup.</li>
+<li>All the rules in the parent cgroup will also apply on the child.</li>
+</ol>
+</br>
+<img src="3.png" alt="Alt Text" width="80%">
 </br>
 </br>
-<p>Yes, the root process that is running the bash process with pid=1 and another child that was created from the parent bash to run the pstree command.</p>
-<h3 id="how-does-it-look-from-outside-of-the-new-namespace">How does it look from outside of the new namespace?</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pstree -p
+</br>
+<h2 id="setting-a-limit-to-the-memory-cgroup">Setting a limit to the memory cgroup:</h2>
+<p>Let&rsquo;s now set a limit to the child cgroup that we created, as now it still hold the limit of the root. I will set a limit of 800KB.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;800000&#34;</span> <span class="p">|</span> sudo tee memory.limit_in_bytes
 </span></span></code></pre></div></br>
-<img src="6.png" alt="Alt Text" width="80%">
-</br>
-<p>As I am connecting to the testing maching using SSH, you can see that any command that I run is created as a child of that bash process that is conecting me to the SSH deamon. Also the process that we create with a new PID namespace is visible from the outside to the root and has a global PID, so it is still a part of the original tree.</p>
+<img src="4.png" alt="Alt Text" width="100%">
 </br>
 </br>
+<p>I have created a spring boot server that has an object that consumes more memory with time, so let&rsquo;s run this server and assign it to the created group and see what happens when it hit the limit.</p>
 </br>
-<h2 id="references">References:</h2>
-<ul>
-<li><a href="https://man7.org/linux/man-pages/man7/pid_namespaces.7.html">PID</a>
-</br></li>
-<li><a href="https://en.wikipedia.org/wiki/Init">Init process</a></li>
-</ul>
-
+<img src="5.png" alt="Alt Text" width="100%">
+</br>
+</br>
+<p>Now, I should add the PID of my server with PID <strong>16787</strong> to the tasks file in the my_server_memory_group</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nb">echo</span> <span class="s2">&#34;16787&#34;</span> <span class="p">|</span> sudo tee tasks
+</span></span></code></pre></div></br>
+<img src="6.png" alt="Alt Text" width="100%">
+</br>
+</br>
+<p>Let&rsquo;s now check what cgroups are applied on my process by checking the kernel proc directory for my process.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat /proc/16787/cgroup
+</span></span></code></pre></div></br>
+<img src="7.png" alt="Alt Text" width="100%">
+</br>
+</br>
+<p>my_server_memory_group is now applied on my process, so if it hits the limit assigned to it. After waiting for while then checking the status of my process, guess what, it is killed ⚔️</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">ps -p <span class="m">16787</span>
+</span></span></code></pre></div></br>
+<img src="8.png" alt="Alt Text" width="100%">
+</br>
+</br>
             </div>
         </article></main>
 </div>

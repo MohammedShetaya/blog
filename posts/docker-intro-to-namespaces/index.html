@@ -3,11 +3,11 @@
 <meta http-equiv="content-type" content="text/html">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title itemprop="name">Docker [E01]: intro to namespaces | Shetaya&#39;s Blog</title>
-<meta property="og:title" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
-<meta name="twitter:title" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
-<meta itemprop="name" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
-<meta name="application-name" content="Docker [E01]: intro to namespaces | Shetaya&#39;s Blog" />
+<title itemprop="name">Docker [E01]: Intro to namespaces | Shetaya&#39;s Blog</title>
+<meta property="og:title" content="Docker [E01]: Intro to namespaces | Shetaya&#39;s Blog" />
+<meta name="twitter:title" content="Docker [E01]: Intro to namespaces | Shetaya&#39;s Blog" />
+<meta itemprop="name" content="Docker [E01]: Intro to namespaces | Shetaya&#39;s Blog" />
+<meta name="application-name" content="Docker [E01]: Intro to namespaces | Shetaya&#39;s Blog" />
 <meta property="og:site_name" content="Shetaya&#39;s blog" />
 
 <meta name="description" content="Minimal Hugo blog theme with light and dark mode support">
@@ -45,7 +45,7 @@
     {
         "@context": "http://schema.org",
         "@type": "Article",
-        "headline": "Docker [E01]: intro to namespaces",
+        "headline": "Docker [E01]: Intro to namespaces",
         "author": {
         "@type": "Person",
         "name": ""
@@ -161,7 +161,7 @@ stroke-linejoin="round" class="feather feather-home">
     <main class="page-content" aria-label="Content">
         <article>
             <header class="header">
-                <h1 class="header-title">Docker [E01]: intro to namespaces</h1>
+                <h1 class="header-title">Docker [E01]: Intro to namespaces</h1>
                 
                 <div class="post-meta">
                     <time datetime="2023-06-23T16:06:47&#43;03:00" itemprop="datePublished"> 23 Jun 2023 </time>
@@ -201,7 +201,7 @@ stroke-linejoin="round" class="feather feather-home">
 <p>Namespaces are a feature of the Linux kernel that partitions kernel resources such that one set of processes sees one set of resources while another set of processes sees a different set of resources. The feature works by having the same namespace for a set of resources and processes, but those namespaces refer to distinct resources. Resources may exist in multiple spaces. Examples of such resources are process IDs, host-names, user IDs, file names, some names associated with network access, and Inter-process communication.</p>
 </blockquote>
 </blockquote>
-<p>Imagine that some memory, cpu, network bandwidth and you want to partition all of them bewtween the running process, so that none of them can interfere with the recources of the other processes, or in some cases not know that another process exist ;)</p>
+<p>Imagine that some memory, cpu, network bandwidth and you want to partition all of them bewtween the running process, so that none of them can interfere with the recources of the other processes, or in some cases not know that another process exists ;)</p>
 <h3 id="linux-namespaces">Linux Namespaces:</h3>
 <ul>
 <li>pid (isolate process ids)</li>

@@ -6,7 +6,17 @@
     <description>Recent content in Posts on Shetaya&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 01 Jul 2023 17:08:08 +0000</lastBuildDate><atom:link href="https://mohammedshetaya.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 16 Jul 2023 09:42:39 +0000</lastBuildDate><atom:link href="https://mohammedshetaya.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Docker [E03]: Cgroups</title>
+      <link>https://mohammedshetaya.github.io/blog/posts/docker-cgroups/</link>
+      <pubDate>Sun, 16 Jul 2023 09:42:39 +0000</pubDate>
+      
+      <guid>https://mohammedshetaya.github.io/blog/posts/docker-cgroups/</guid>
+      <description>Intro We took a dive into namespaces, then we discussed how PID namespace achieves the isolation of process IDs. Let&amp;rsquo;s now talk about cgroups. We will get to the namespace later, but for now, we will start discussing cgroups and the discussion will proceed interchangeably between the two topics.
+Namespaces VS Cgroups We mentioned that the main use of namespaces is to provide process level isolaion by virtualizing system recources that allows processes to have their own isolated view of the system recources such as process IDs, network interfaces, file systems, etc.</description>
+    </item>
+    
     <item>
       <title>Docker [E02]: PID namespaces</title>
       <link>https://mohammedshetaya.github.io/blog/posts/docker-pid-namespace/</link>
@@ -18,7 +28,7 @@ PID Namespaces: To understand what this is we need to go one step back and try t
     </item>
     
     <item>
-      <title>Docker [E01]: intro to namespaces</title>
+      <title>Docker [E01]: Intro to namespaces</title>
       <link>https://mohammedshetaya.github.io/blog/posts/docker-intro-to-namespaces/</link>
       <pubDate>Fri, 23 Jun 2023 16:06:47 +0300</pubDate>
       
