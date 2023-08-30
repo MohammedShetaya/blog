@@ -4,10 +4,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title itemprop="name">Shetaya&#39;s Blog</title>
-<meta property="og:title" content="Posts | Shetaya&#39;s Blog" />
-<meta name="twitter:title" content="Posts | Shetaya&#39;s Blog" />
-<meta itemprop="name" content="Posts | Shetaya&#39;s Blog" />
-<meta name="application-name" content="Posts | Shetaya&#39;s Blog" />
+<meta property="og:title" content="Docker [E04]: Docker Architecture | Shetaya&#39;s Blog" />
+<meta name="twitter:title" content="Docker [E04]: Docker Architecture | Shetaya&#39;s Blog" />
+<meta itemprop="name" content="Docker [E04]: Docker Architecture | Shetaya&#39;s Blog" />
+<meta name="application-name" content="Docker [E04]: Docker Architecture | Shetaya&#39;s Blog" />
 <meta property="og:site_name" content="Shetaya&#39;s blog" />
 
 <meta name="description" content="Minimal Hugo blog theme with light and dark mode support">
@@ -32,11 +32,6 @@
     
     
     
-    <link rel="first" href="/blog/posts/" />
-    <link rel="last" href="/blog/posts/" />
-    
-    
-    
 
     <meta property="og:type" content="article" />
     <meta property="og:article:published_time" content=2023-08-30T17:36:04Z />
@@ -50,14 +45,14 @@
     {
         "@context": "http://schema.org",
         "@type": "Article",
-        "headline": "Posts",
+        "headline": "Docker [E04]: Docker Architecture",
         "author": {
         "@type": "Person",
         "name": ""
         },
         "datePublished": "2023-08-30",
         "description": "",
-        "wordCount":  0 ,
+        "wordCount":  651 ,
         "mainEntityOfPage": "True",
         "dateModified": "2023-08-30",
         "image": {
@@ -76,9 +71,7 @@
 
     
 
-    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/posts/">
-    <link href="/blog/posts/index.xml" rel="alternate" type="application/rss+xml" title="Shetaya&#39;s Blog">
-    <link href="/blog/posts/index.xml" rel="feed" type="application/rss+xml" title="Shetaya&#39;s Blog">
+    <link rel="canonical" href="https://mohammedshetaya.github.io/blog/posts/docker-architecture/">
     <link href="/blog/style.min.d16f523c36741e07697791cfe4bcb09b8c92c7034d5cbf85980df65d92a70e97.css" rel="stylesheet">
     <link href="/blog/code-highlight.min.706d31975fec544a864cb7f0d847a73ea55ca1df91bf495fd12a177138d807cf.css" rel="stylesheet">
 
@@ -137,7 +130,7 @@ stroke-linejoin="round" class="feather feather-home">
                 </li>
                 
                 <li>
-                    <a class="menu-link " href="/blog/posts/">
+                    <a class="menu-link active" href="/blog/posts/">
                         Posts
                     </a>
                     
@@ -163,79 +156,119 @@ stroke-linejoin="round" class="feather feather-home">
         </div>
     </nav>
 </div>
-<div class="wrapper list-page">
-    <header class="header">
-        <h1 class="header-title center">Posts</h1>
-    </header>
+
+<div class="wrapper post">
     <main class="page-content" aria-label="Content">
-        
-        
-        <h2 class="post-year">2023</h2>
+        <article>
+            <header class="header">
+                <h1 class="header-title">Docker [E04]: Docker Architecture</h1>
+                
+                <div class="post-meta">
+                    <time datetime="2023-08-30T17:36:04&#43;00:00" itemprop="datePublished"> 30 Aug 2023 </time>
+                </div>
+            </header>
+            <details class="toc">
+                <summary><b>Table of Contents</b></summary>
+                <nav id="TableOfContents">
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#docker-architecture">Docker Architecture</a>
+      <ul>
+        <li><a href="#1-docker-deamon">1. Docker Deamon</a></li>
+        <li><a href="#2-docker-client">2. Docker Client</a></li>
+        <li><a href="#3-docker-registry">3. Docker Registry</a></li>
+        <li><a href="#4-docker-containers">4. Docker Containers</a></li>
+      </ul>
+    </li>
+    <li><a href="#docker-in-action">Docker in Action</a>
+      <ul>
+        <li><a href="#1-docker-installation">1. Docker Installation</a></li>
+        <li><a href="#2-creating-an-ubuntu-container">2. Creating an Ubuntu container</a></li>
+        <li><a href="#3-host-namespaces-vs-container-namespaces">3. Host namespaces vs Container namespaces</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+            </details><div class="page-content">
+                <h2 id="overview">Overview</h2>
+<p>Up until now, we have discussed the isolation of processes using namespaces and cgroups. We also discussed how the combination of these two technologies can have huge benefits. In this post, we will discuss the architecture of docker and how it uses namespaces and cgroups to achieve the isolation of processes.
+</br>
+</br></p>
+<h2 id="docker-architecture">Docker Architecture</h2>
+<p><img src="https://docs.docker.com/assets/images/architecture.svg" alt="Docker Architecture">
+</br>
+Docker is a vague name when comes to talking about &ldquo;Docker&rdquo; 🥸 What matters to us is what is it composed of?
+</br></p>
+<h3 id="1-docker-deamon">1. Docker Deamon</h3>
+<p>This is the core component of Docker. It is a long-running process that manages docker objects such as images, containers, networks, and volumes. It is the one that is responsible for creating, running, and monitoring the containers. Docker Deamon awaits for request from the Docker Client to execute commands such as <code>docker run</code>, <code>docker build</code>, <code>docker pull</code>, etc. The Docker Deamon is also responsible for communicating with other daemons to manage Docker services.</p>
+<h3 id="2-docker-client">2. Docker Client</h3>
+<p>The Docker Client comes in two forms:</p>
+<ul>
+<li>Docker CLI: which handles the commad line requests.</li>
+<li>Docker Compose: which can execute multiple commands at once to create more complex containers.</li>
+</ul>
+<p>The two forms of the Docker Client communicate with the Docker Deamon using the Docker Rest API. Once These Requests are received by the Docker Deamon, it will execute the commands as dissussed above.</p>
+<h3 id="3-docker-registry">3. Docker Registry</h3>
+<p>Docker Registry is a service that stores Docker images. Docker Hub is the default registry that comes with Docker. This is primarly the place where you store the blueprints of your containers, so that you can pull them later to create the same container on any infrastructure.</p>
+<h3 id="4-docker-containers">4. Docker Containers</h3>
+<p>Docker containers are the running instances of Docker images. They are isolated from each other using namespaces and cgroups. They are also isolated from the host machine. This means that the containers are isolated from each other and from the host machine. This is the main reason why Docker is so popular.</p>
+<h2 id="docker-in-action">Docker in Action</h2>
+<p>Let&rsquo;s now apply what we have learned so far. We will create an Ubuntu container and see how it is isolated from the host machine. We will also see how the isolation is achieved using namespaces.</p>
+<h3 id="1-docker-installation">1. Docker Installation</h3>
+<p>I installed Docker on my Ubuntu 20.04 server. Then ran <code>pstree -p</code>. It shows two new processes</p>
+<ul>
+<li><code>dockerd</code>: which is the Docker Deamon that is waiting for any commands from the Docker Client.</li>
+<li><code>containerd</code>: is a container runtime that is responsible for managing the lifecycle of containers. It is created by default by the Docker Deamon.
+</br>
+</br>
+<img src="1.png" alt="Alt Text" width="90%">
+</br></li>
+</ul>
+<h3 id="2-creating-an-ubuntu-container">2. Creating an Ubuntu container</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">docker run -it --name my-ubuntu-container ubuntu
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># then inside the conatiner I will create another process using the watch command</span>
+</span></span><span class="line"><span class="cl">root@5925ab9158c9:/# watch ps -ax
+</span></span></code></pre></div></br>
+</br>
+<img src="2.png" alt="Alt Text" width="90%">
+</br>
+<p>If we take a look again from host shell, we can find the ubuntu container running as a child from the containerd process. The container has a child watch process. This means the inner processes are visible to the host machine. Now let&rsquo;s take a look from inside of the new container.</p>
+<img src="3.png" alt="Alt Text" width="90%">
+</br>
+<p>The bash process (the Ubuntu container) is having a PID of <code>1</code> same as the systemd on the host. This means that the container is isolated from the host machine. It is also isolated from the other containers. This is achieved using the PID namespace.</p>
+<h3 id="3-host-namespaces-vs-container-namespaces">3. Host namespaces vs Container namespaces</h3>
+<p>Let&rsquo;s take a look at the namespaces of the host machine and the container. We will use the <code>lsns</code> command to list the namespaces of the host and the container.</p>
+<ul>
+<li>
+<p>Host namespaces:
+</br>
+<img src="4.png" alt="Alt Text" width="90%">
+</br></p>
+</li>
+<li>
+<p>Container namespaces:
+</br>
+<img src="5.png" alt="Alt Text" width="90%">
+</br></p>
+</li>
+</ul>
+<p>So, different namespaces are created for the container 🥳. If we trace the system calls used by the containerd process, we will find that it uses the same unshare and clone commands that we used in the previous posts to create these namesapces. Each container has a set of requirements that docker fullfills, but the underlying technology is the same.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>
+<p><a href="https://docs.docker.com/get-started/overview/#:~:text=Docker%20architecture,to%20a%20remote%20Docker%20daemon.">Docker Architecture</a></p>
+</li>
+<li>
+<p><a href="https://containerd.io/docs/">Containerd</a></p>
+</li>
+</ul>
 
-        
-
-        
-
-        <article class="post-item">
-    <h4 class="post-item-title">
-        <a href="/blog/posts/docker-architecture/">Docker [E04]: Docker Architecture</a>
-    </h4>
-    
-    
-    <time class="post-item-meta" datetime="2023-08-30T17:36:04Z">
-        30 Aug 2023
-    </time>
-</article>
-
-
-        
-
-        <article class="post-item">
-    <h4 class="post-item-title">
-        <a href="/blog/posts/docker-cgroups/">Docker [E03]: Cgroups</a>
-    </h4>
-    
-    
-    <time class="post-item-meta" datetime="2023-07-16T09:42:39Z">
-        16 Jul 2023
-    </time>
-</article>
-
-
-        
-
-        <article class="post-item">
-    <h4 class="post-item-title">
-        <a href="/blog/posts/docker-pid-namespace/">Docker [E02]: PID namespaces</a>
-    </h4>
-    
-    
-    <time class="post-item-meta" datetime="2023-07-01T17:08:08Z">
-        1 Jul 2023
-    </time>
-</article>
-
-
-        
-
-        <article class="post-item">
-    <h4 class="post-item-title">
-        <a href="/blog/posts/docker-intro-to-namespaces/">Docker [E01]: Intro to namespaces</a>
-    </h4>
-    
-    
-    <time class="post-item-meta" datetime="2023-06-23T16:06:47&#43;0300">
-        23 Jun 2023
-    </time>
-</article>
-
-
-         
-
-         
-
-    </main>
-</div><footer class="footer">
+            </div>
+        </article></main>
+</div>
+<footer class="footer">
     <span class="footer_item"> </span>
     &nbsp;
 

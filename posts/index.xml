@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Shetaya&#39;s Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 16 Jul 2023 09:42:39 +0000</lastBuildDate><atom:link href="https://mohammedshetaya.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 30 Aug 2023 17:36:04 +0000</lastBuildDate><atom:link href="https://mohammedshetaya.github.io/blog/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Docker [E04]: Docker Architecture</title>
+      <link>https://mohammedshetaya.github.io/blog/posts/docker-architecture/</link>
+      <pubDate>Wed, 30 Aug 2023 17:36:04 +0000</pubDate>
+      
+      <guid>https://mohammedshetaya.github.io/blog/posts/docker-architecture/</guid>
+      <description>Overview Up until now, we have discussed the isolation of processes using namespaces and cgroups. We also discussed how the combination of these two technologies can have huge benefits. In this post, we will discuss the architecture of docker and how it uses namespaces and cgroups to achieve the isolation of processes. Docker Architecture Docker is a vague name when comes to talking about &amp;ldquo;Docker&amp;rdquo; 🥸 What matters to us is what is it composed of?</description>
+    </item>
+    
     <item>
       <title>Docker [E03]: Cgroups</title>
       <link>https://mohammedshetaya.github.io/blog/posts/docker-cgroups/</link>
